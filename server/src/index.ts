@@ -1,25 +1,28 @@
-import express from "express";
+require("dotenv").config();
+
+import express, { Application } from 'express';
 import { ApolloServer } from "apollo-server-express";
-import { schema } from './graphql/qraphql';
+import { connectDatabase } from './database/index';
+import {typeDefs, resolvers} from './graphql'
 
-const app = express();
-const PORT = process.env.PORT || 9000;
-// import {listings} from './listings';
+const port = process.env.PORT;
+console.log('process.env.PORT ', process.env.PORT);
+const mount = async (app: Application) => {
+    //connect to ds
+    const db = await connectDatabase();
 
-// const one: number = 2;
-// const two: any = undefined;
+    //called with every request, all resolvers will have access to the Database
+    const server = new ApolloServer({
+        typeDefs,
+        resolvers,
+        context: () => ({ db })
+    });
+    server.applyMiddleware({ app, path: "/api" });
+    
+    app.listen(port, () => console.log(`Mixing it up on port ${port}`))
 
-const server = new ApolloServer({ schema });
-server.applyMiddleware({ app, path: "/api" });
+    const listings = await db.listings.find({}).toArray();
+    console.log(listings);
+}
 
-
-// app.get('/', (_req, res) => {
-//   return res.send('Hello World!');  
-// });
-
-// app.get('/listings', (_req, res) => {
-//   return res.send(listings);  
-// });
-
-app.listen(PORT, () => console.log(`Mixing it up on port ${PORT}`))
-
+mount(express());
