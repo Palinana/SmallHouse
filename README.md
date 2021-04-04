@@ -1,2 +1,2 @@
-# house-practice
-house-practice
+# SmallHouse
+A Typescript, React, GraphQL, Node & MongoDB application for renting houses.
